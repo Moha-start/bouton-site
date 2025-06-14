@@ -2,33 +2,108 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Bouton Google</title>
+  <title>Bouton connecté à Google Sheets</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; }
-    button { font-size: 18px; padding: 10px 20px; }
-    #compteur { margin-left: 15px; font-weight: bold; }
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      color: #fff;
+      background: #1e1e1e;
+    }
+
+    h1 {
+      color: #ffcc5b;
+      margin-bottom: 20px;
+    }
+
+    button {
+      font-size: 18px;
+      padding: 10px 20px;
+      background: #ffcc5b;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-bottom: 20px;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #ffa500;
+    }
+
+    #compteur {
+      margin-bottom: 20px;
+      font-size: 16px;
+    }
+
+    ul#historique {
+      list-style-type: none;
+      padding: 0;
+      margin-bottom: 20px;
+    }
+
+    ul#historique li {
+      background: #fff5cc;
+      color: #000022;
+      margin-bottom: 10px;
+      padding: 10px 15px;
+      border-radius: 12px;
+      box-shadow: 0 2px 5px rgb(0 0 0 / 0.5);
+      transition: transform 0.3s ease, background 0.3s ease;
+    }
+
+    ul#historque li:hover {
+      transform: translateY(-5px);
+      background: #ffeb99;
+    }
   </style>
 </head>
 <body>
   <h1>Bouton connecté à Google Sheets</h1>
+
   <button onclick="enregistrerClic()">Valider</button>
+
   <span id="compteur">Dernier appui : jamais</span>
-  <ul id="historique"></ul>
+
+  <ul id="historique"><!-- Liste des derniers enregistrements --></ul>
 
   <script>
+    // Ton URL de l'API Apps Script
     const API_URL = "https://script.google.com/macros/s/AKfycby1I1T0qYrUapZJRk7KXTvo5qKTqCeKrG6Ln-q2C4l9FYuttkoVAkB-Rpc4iiwfcA59/exec";
 
     async function chargerHistorique() {
       try {
         const res = await fetch(API_URL);
-        const data = await res.json();
+        let data = await res.json();
+
+        // On trie du plus récent au plus ancien
+        data.sort((a, b) => new Date(b) - new Date(a));
+
+        // On vide d'abord la liste
         document.getElementById("historique").innerHTML = "";
-        data.reverse().forEach(item => {
+
+        data.forEach(item => {
           const li = document.createElement("li");
-          li.textContent = item;
+
+          // Formatage de la date plus lisible
+          // Par exemple : 14/06/2025 15:30:12
+          const d = new Date(item);
+          const options = { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit"};
+          const formatted = d.toLocaleString("fr-FR", options);
+
+          li.textContent = `• ${formatted}`;
+
           document.getElementById("historique").appendChild(li);
         });
-        document.getElementById("compteur").textContent = "Dernier appui : " + (data[0] || "jamais");
+
+        if (data.length > 0) {
+          document.getElementById("compteur").textContent = "Dernier appui : " + new Date(data[0]).toLocaleString("fr-FR");
+
+        } else {
+          document.getElementById("compteur").textContent = "Dernier appui : jamais";
+
+        }
       } catch (e) {
         console.error("Erreur de chargement :", e);
       }
@@ -37,6 +112,7 @@
     async function enregistrerClic() {
       try {
         await fetch(API_URL + "?add=true");
+
         chargerHistorique();
       } catch (e) {
         console.error("Erreur d'envoi :", e);
