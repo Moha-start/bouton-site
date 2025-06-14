@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Bouton Google</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    button { font-size: 18px; padding: 10px 20px; }
+    #compteur { margin-left: 15px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>Bouton connecté à Google Sheets</h1>
+  <button onclick="enregistrerClic()">Valider</button>
+  <span id="compteur">Dernier appui : jamais</span>
+  <ul id="historique"></ul>
+
+  <script>
+    const API_URL = "TON_URL_DEPLOIEMENT"; // remplace par ton URL Apps Script
+
+    async function chargerHistorique() {
+      const res = await fetch(API_URL);
+      const data = await res.json();
+      document.getElementById("historique").innerHTML = "";
+      data.reverse().forEach(item => {
+        const li = document.createElement("li");
+        li.textContent = item;
+        document.getElementById("historique").appendChild(li);
+      });
+      document.getElementById("compteur").textContent = "Dernier appui : " + (data[0] || "jamais");
+    }
+
+    async function enregistrerClic() {
+      await fetch(API_URL, { method: "POST" });
+      chargerHistorique();
+    }
+
+    chargerHistorique();
+  </script>
+</body>
+</html>
