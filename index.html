@@ -16,7 +16,7 @@
   <ul id="historique"></ul>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbxpkjSFMLhX0V2b1aKPbnfMj9hTW5Pk6xzDT7jtWZuS8bag9OWotXaZ4JTuO0iAzYfN/exec"; // remplace par ton URL Apps Script
+    const API_URL = "https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLjlUrBHZ5s1-c86--cYD36njqkrcPq1UWvange8Lp1WZouMiTZcWC1GQbE_MnCLRcH2rWy1A1wGEP7xrm67DHQYpAiVJl33V89sYRM2g6xUM9yYvBsDzw4kpw7xVXCCTHPj91-BU8ocGDpjXYUWSNzwvUuNN2tzCkG7ksCopeuz6D2XoUPNz5VR3hOMJwPFGZi-GkvN3WtXmaESIzzjoBqx4AR5oOdmCmLrKv5C0-8rqzR6FaiMSb5hOXeEzGRxd9_8WXSLBXqC1bL8QsfmkoHd9VGjjw&lib=M2KB-t2S1_EAI4u2-36j5vVcWKeLT2VGn"; // remplace par ton URL Apps Script
 
     async function chargerHistorique() {
       const res = await fetch(API_URL);
@@ -30,10 +30,10 @@
       document.getElementById("compteur").textContent = "Dernier appui : " + (data[0] || "jamais");
     }
 
-    async function enregistrerClic() {
-      await fetch(API_URL, { method: "POST" });
-      chargerHistorique();
-    }
+  async function enregistrerClic() {
+    await fetch(API_URL + "?add=true"); // envoie le clic avec GET
+    chargerHistorique();
+  }
 
     chargerHistorique();
   </script>
