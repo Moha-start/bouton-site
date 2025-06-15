@@ -40,13 +40,13 @@
       margin-bottom: 20px;
     }
 
-    ul#historque {
+    ul#historique {
       list-style-type: none;
       padding: 0;
       margin-bottom: 20px;
     }
 
-    ul#historque li {
+    ul#historique li {
       background: #fff;
       padding: 10px 15px;
       margin-bottom: 10px;
@@ -55,7 +55,7 @@
       transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
-    ul#historque li:hover {
+    ul#historique li:hover {
       transform: translateY(-5px);
       box-shadow: 0 4px 14px rgb(0 0 0 / 0.2);
       background: #e8f5e9;
@@ -67,38 +67,33 @@
 
   <button onclick="enregistrerClic()">Valider</button>
 
-  <ul id="historque"><!-- Liste des enregistrements --></ul>
+  <ul id="historique"></ul>
 
   <div id="compteur">Dernier appui : jamais</div>
 
   <script>
-    // Ton URL de l'API Apps Script
     const API_URL = "https://script.google.com/macros/s/AKfycbzgff8yMYeZSVobL-1kRM-SE4pzbUKMD_XBdoFuxmfJNanF7Jldor4YqWDtuRZUBLsc/exec";
 
-    async function chargerHistorque() {
+    async function chargerHistorique() {
       try {
         const res = await fetch(API_URL);
         let data = await res.json();
 
-        // Plus ancien en haut
-        data.sort((a, b) => new Date(a) - new Date(b));
+        // Trier du plus récent au plus ancien
+        data.sort((a, b) => new Date(b) - new Date(a));
 
-        document.getElementById("historque").innerHTML = "";
+        document.getElementById("historique").innerHTML = "";
 
         data.forEach(item => {
           const li = document.createElement("li");
-
           li.textContent = `• ${item}`;
-
-          document.getElementById("historque").appendChild(li);
+          document.getElementById("historique").appendChild(li);
         });
 
-        if (data.length > 0) {
-          document.getElementById("compteur").textContent = "Dernier appui : " + data[data.length - 1];
-        } else {
-          document.getElementById("compteur").textContent = "Dernier appui : jamais";
+        document.getElementById("compteur").textContent = data.length > 0 
+          ? "Dernier appui : " + data[0] 
+          : "Dernier appui : jamais";
 
-        }
       } catch (e) {
         console.error("Erreur de chargement :", e);
       }
@@ -106,15 +101,14 @@
 
     async function enregistrerClic() {
       try {
-        await fetch(API_URL + "?add=false&add=true");
-
-        chargerHistorque();
+        await fetch(API_URL + "?add=true");
+        chargerHistorique();
       } catch (e) {
         console.error("Erreur d'envoi :", e);
       }
     }
 
-    chargerHistorque();
+    chargerHistorique();
   </script>
 </body>
 </html>
