@@ -67,21 +67,21 @@
 
   <button onclick="enregistrerClic()">Valider</button>
 
-  <span id="compteur">Dernier appui : jamais</span>
+  <ul id="historque"><!-- Liste des enregistrements --></ul>
 
-  <ul id="historque"><!-- Liste des derniers enregistrements --></ul>
+  <div id="compteur">Dernier appui : jamais</div>
 
   <script>
     // Ton URL de l'API Apps Script
-    const API_URL = "https://script.google.com/macros/s/AKfycbxTNJVIz407NRt_B2xsXGCPiNmk7sqC6gx1c33VJkV5AADkPLoCDhzNspefHpJjycQI/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbzgff8yMYeZSVobL-1kRM-SE4pzbUKMD_XBdoFuxmfJNanF7Jldor4YqWDtuRZUBLsc/exec";
 
-    async function chargerHistorique() {
+    async function chargerHistorque() {
       try {
         const res = await fetch(API_URL);
         let data = await res.json();
 
-        // Trie par plus récent en premier
-        data.sort((a, b) => new Date(b) - new Date(a));
+        // Plus ancien en haut
+        data.sort((a, b) => new Date(a) - new Date(b));
 
         document.getElementById("historque").innerHTML = "";
 
@@ -94,7 +94,7 @@
         });
 
         if (data.length > 0) {
-          document.getElementById("compteur").textContent = "Dernier appui : " + data[0];
+          document.getElementById("compteur").textContent = "Dernier appui : " + data[data.length - 1];
         } else {
           document.getElementById("compteur").textContent = "Dernier appui : jamais";
 
@@ -108,13 +108,13 @@
       try {
         await fetch(API_URL + "?add=false&add=true");
 
-        chargerHistorique();
+        chargerHistorque();
       } catch (e) {
         console.error("Erreur d'envoi :", e);
       }
     }
 
-    chargerHistorique();
+    chargerHistorque();
   </script>
 </body>
 </html>
