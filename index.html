@@ -46,7 +46,7 @@
       margin-bottom: 20px;
     }
 
-    ul#historique li {
+    ul#historque li {
       background: #fff;
       padding: 10px 15px;
       margin-bottom: 10px;
@@ -55,7 +55,7 @@
       transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
-    ul#historique li:hover {
+    ul#historque li:hover {
       transform: translateY(-5px);
       box-shadow: 0 4px 14px rgb(0 0 0 / 0.2);
       background: #e8f5e9;
@@ -69,17 +69,18 @@
 
   <span id="compteur">Dernier appui : jamais</span>
 
-  <ul id="historique"><!-- Liste des derniers enregistrements --></ul>
+  <ul id="historque"><!-- Liste des derniers enregistrements --></ul>
 
   <script>
-    // Ton URL de l'API
-    const API_URL = "https://script.google.com/macros/s/AKfycbwJE9GBAIBADTEJZNVA62PJePU8FJsrRp17E6nSnC9USOjwEYdftoMaFyjvedGKgSj5/exec";
+    // Ton URL de l'API Apps Script
+    const API_URL = "https://script.google.com/macros/s/AKfycbxPs-acsehA6pOiWhM2l58lWjQ6ZJWGMqz5L6ox5dlPrXMBNcQ_1OvehZJNopuPJde1/exec";
 
     async function chargerHistorique() {
       try {
         const res = await fetch(API_URL);
         let data = await res.json();
 
+        // trie par plus récent
         data.sort((a, b) => new Date(b) - new Date(a));
 
         document.getElementById("historque").innerHTML = "";
@@ -87,19 +88,13 @@
         data.forEach(item => {
           const li = document.createElement("li");
 
-          // Formatage de la date plus lisible
-          const d = new Date(item);
-          const options = { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit"};
-          const formatted = d.toLocaleString("fr-FR", options);
+          li.textContent = `• ${item}`;
 
-          li.textContent = `• ${formatted}`;
-
-          document.getElementById("historique").appendChild(li);
+          document.getElementById("historque").appendChild(li);
         });
 
         if (data.length > 0) {
-          document.getElementById("compteur").textContent = "Dernier appui : " + new Date(data[0]).toLocaleString("fr-FR");
-
+          document.getElementById("compteur").textContent = "Dernier appui : " + data[0];
         } else {
           document.getElementById("compteur").textContent = "Dernier appui : jamais";
 
