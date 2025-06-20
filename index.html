@@ -38,8 +38,11 @@
       font-size: 14px;
       padding: 5px 10px;
       background: #f44336;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
       margin-left: 10px;
-      display: inline-block;
+      cursor: pointer;
     }
 
     .delete-btn:hover {
@@ -104,13 +107,13 @@
   <div id="errorMessage"></div>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbzjOhwFikj1eYUZO8V2R9E3sdQhTZAeRydN6cAJZMtbum-lkbN5OVp0r-bvHY3Y8oWC/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbyoIKR-frQDf0MYsrEGcZGp_khBAJRMxaD2RY4tUNoKOlVwnlITES5yd2re0mNH6Z1b/exec";
 
     async function chargerHistorique() {
       try {
         console.log("Chargement de l'historique...");
         const res = await fetch(API_URL);
-        if (!res.ok) throw new Error(`Erreur HTTP : ${res.status}`);
+        if (!res.ok) throw new Error(`Erreur HTTP : ${res.status} ${res.statusText}`);
         const data = await res.json();
         console.log("Données reçues :", data);
 
@@ -130,6 +133,10 @@
           historique.appendChild(li);
         } else {
           data.forEach(item => {
+            if (!item.timestamp) {
+              console.warn("Entrée sans timestamp :", item);
+              return;
+            }
             const li = document.createElement("li");
             const textSpan = document.createElement("span");
             textSpan.textContent = `• Date: ${item.timestamp}${item.note ? ' | Note: ' + item.note : ' | Note: (aucune)'}`;
@@ -140,6 +147,7 @@
             li.appendChild(textSpan);
             li.appendChild(deleteBtn);
             historique.appendChild(li);
+            console.log("Ajout de l'entrée à la liste :", item);
           });
         }
 
@@ -159,12 +167,13 @@
         const note = document.getElementById("noteInput").value.trim();
         if (!note) {
           alert("Veuillez entrer une note avant de valider.");
+          document.getElementById("errorMessage").textContent = "Veuillez entrer une note.";
           return;
         }
         const url = `${API_URL}?add=true&note=${encodeURIComponent(note)}`;
         console.log("Envoi de la requête :", url);
         const res = await fetch(url);
-        if (!res.ok) throw new Error(`Erreur HTTP : ${res.status}`);
+        if (!res.ok) throw new Error(`Erreur HTTP : ${res.status} ${res.statusText}`);
         document.getElementById("noteInput").value = ''; // Clear input after submission
         console.log("Clic enregistré, rechargement de l'historique...");
         await chargerHistorique();
@@ -179,7 +188,7 @@
         const url = `${API_URL}?delete=true&timestamp=${encodeURIComponent(timestamp)}`;
         console.log("Envoi de la requête de suppression :", url);
         const res = await fetch(url);
-        if (!res.ok) throw new Error(`Erreur HTTP : ${res.status}`);
+        if (!res.ok) throw new Error(`Erreur HTTP : ${res.status} ${res.statusText}`);
         console.log("Entrée supprimée, rechargement de l'historique...");
         await chargerHistorique();
       } catch (e) {
