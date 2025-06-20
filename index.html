@@ -27,7 +27,7 @@
       box-shadow: 0 4px 14px rgb(0 0 0 / 0.1);
       transition: background 0.3s ease;
       cursor: pointer;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
     }
 
     button:hover {
@@ -52,7 +52,7 @@
     #compteur {
       font-size: 16px;
       color: #555;
-      margin-bottom: 20px;
+      margin: 10px 0 20px 0;
     }
 
     ul#historique {
@@ -86,12 +86,13 @@
       margin-right: 10px;
       border: 1px solid #ccc;
       border-radius: 5px;
+      margin-bottom: 10px;
     }
 
     #errorMessage {
       color: #f44336;
       font-size: 16px;
-      margin-top: 10px;
+      margin: 10px 0;
     }
   </style>
 </head>
@@ -101,13 +102,12 @@
   <input type="text" id="noteInput" placeholder="Entrez une note">
   <button onclick="enregistrerClic()">Valider</button>
 
-  <ul id="historique"></ul>
-
   <div id="compteur">Dernier appui : jamais</div>
+  <ul id="historique"></ul>
   <div id="errorMessage"></div>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbyoIKR-frQDf0MYsrEGcZGp_khBAJRMxaD2RY4tUNoKOlVwnlITES5yd2re0mNH6Z1b/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbzeE4Op6sbmkAfV_IDyiTu_37bjlYCqNgXVqrzeI8mRA4XxZHBmciRm_p3iitVV-dIE/exec";
 
     async function chargerHistorique() {
       try {
