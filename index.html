@@ -60,11 +60,21 @@
       box-shadow: 0 4px 14px rgb(0 0 0 / 0.2);
       background: #e8f5e9;
     }
+
+    #noteInput {
+      font-size: 16px;
+      padding: 10px;
+      width: 300px;
+      margin-right: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
   </style>
 </head>
 <body>
   <h1>Bouton connecté à Google Sheets</h1>
 
+  <input type="text" id="noteInput" placeholder="Entrez une note">
   <button onclick="enregistrerClic()">Valider</button>
 
   <ul id="historique"></ul>
@@ -72,39 +82,52 @@
   <div id="compteur">Dernier appui : jamais</div>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbyPNSxosBUsobsGt_ZpRoYpzVXdgbDgakW09Abv1xMTSApqPvCfkhSFaPR8ZVHyxLJ0/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbwUVFrOiwqFPTMDg9oLISSgtfMFG6J2uYdi2fSxYPDak3EMMmHMsLf0cYqfVvEaafgb/exec";
 
     async function chargerHistorique() {
       try {
         const res = await fetch(API_URL);
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         let data = await res.json();
 
         // Trier du plus récent au plus ancien
-        data.sort((a, b) => new Date(b) - new Date(a));
+        data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-        document.getElementById("historique").innerHTML = "";
+        const historique = document.getElementById("historique");
+        historique.innerHTML = ""; // Clear list to prevent duplicates
 
         data.forEach(item => {
           const li = document.createElement("li");
-          li.textContent = `• ${item}`;
-          document.getElementById("historique").appendChild(li);
+          // Explicitly display both timestamp and note
+          li.textContent = `• Date: ${item.timestamp}${item.note ? ' | Note: ' + item.note : ' | Note: (aucune)'}`;
+          historique.appendChild(li);
         });
 
         document.getElementById("compteur").textContent = data.length > 0 
-          ? "Dernier appui : " + data[0] 
+          ? `Dernier appui : Date: ${data[0].timestamp}${data[0].note ? ' | Note: ' + data[0].note : ' | Note: (aucune)'}` 
           : "Dernier appui : jamais";
 
       } catch (e) {
         console.error("Erreur de chargement :", e);
+        document.getElementById("compteur").textContent = "Erreur de chargement";
       }
     }
 
     async function enregistrerClic() {
       try {
-        await fetch(API_URL + "?add=true");
-        chargerHistorique();
+        const note = document.getElementById("noteInput").value.trim();
+        if (!note) {
+          alert("Veuillez entrer une note avant de valider.");
+          return;
+        }
+        const url = `${API_URL}?add=true&note=${encodeURIComponent(note)}`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        document.getElementById("noteInput").value = ''; // Clear input after submission
+        await chargerHistorique();
       } catch (e) {
         console.error("Erreur d'envoi :", e);
+        document.getElementById("compteur").textContent = "Erreur d'envoi";
       }
     }
 
