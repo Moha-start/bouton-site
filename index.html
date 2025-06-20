@@ -82,13 +82,15 @@
   <div id="compteur">Dernier appui : jamais</div>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbwUVFrOiwqFPTMDg9oLISSgtfMFG6J2uYdi2fSxYPDak3EMMmHMsLf0cYqfVvEaafgb/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbw2skwv2jNV33_qDKgT0ops6HuqqWE4p5kvO8FvJAwm07HAuSvy4UOeQMoHo4cxjmCn/exec";
 
     async function chargerHistorique() {
       try {
+        console.log("Chargement de l'historique...");
         const res = await fetch(API_URL);
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-        let data = await res.json();
+        if (!res.ok) throw new Error(`Erreur HTTP : ${res.status}`);
+        const data = await res.json();
+        console.log("Données reçues :", data);
 
         // Trier du plus récent au plus ancien
         data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
@@ -98,7 +100,6 @@
 
         data.forEach(item => {
           const li = document.createElement("li");
-          // Explicitly display both timestamp and note
           li.textContent = `• Date: ${item.timestamp}${item.note ? ' | Note: ' + item.note : ' | Note: (aucune)'}`;
           historique.appendChild(li);
         });
@@ -109,7 +110,7 @@
 
       } catch (e) {
         console.error("Erreur de chargement :", e);
-        document.getElementById("compteur").textContent = "Erreur de chargement";
+        document.getElementById("compteur").textContent = `Erreur de chargement : ${e.message}`;
       }
     }
 
@@ -121,13 +122,15 @@
           return;
         }
         const url = `${API_URL}?add=true&note=${encodeURIComponent(note)}`;
+        console.log("Envoi de la requête :", url);
         const res = await fetch(url);
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        if (!res.ok) throw new Error(`Erreur HTTP : ${res.status}`);
         document.getElementById("noteInput").value = ''; // Clear input after submission
+        console.log("Clic enregistré, rechargement de l'historique...");
         await chargerHistorique();
       } catch (e) {
         console.error("Erreur d'envoi :", e);
-        document.getElementById("compteur").textContent = "Erreur d'envoi";
+        document.getElementById("compteur").textContent = `Erreur d'envoi : ${e.message}`;
       }
     }
 
