@@ -34,6 +34,18 @@
       background: #45a049;
     }
 
+    .delete-btn {
+      font-size: 14px;
+      padding: 5px 10px;
+      background: #f44336;
+      margin-left: 10px;
+      display: inline-block;
+    }
+
+    .delete-btn:hover {
+      background: #d32f2f;
+    }
+
     #compteur {
       font-size: 16px;
       color: #555;
@@ -53,6 +65,9 @@
       border-radius: 5px;
       box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
       transition: transform 0.2s ease, box-shadow 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
 
     ul#historique li:hover {
@@ -69,6 +84,12 @@
       border: 1px solid #ccc;
       border-radius: 5px;
     }
+
+    #errorMessage {
+      color: #f44336;
+      font-size: 16px;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
@@ -80,9 +101,10 @@
   <ul id="historique"></ul>
 
   <div id="compteur">Dernier appui : jamais</div>
+  <div id="errorMessage"></div>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbw2skwv2jNV33_qDKgT0ops6HuqqWE4p5kvO8FvJAwm07HAuSvy4UOeQMoHo4cxjmCn/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbzjOhwFikj1eYUZO8V2R9E3sdQhTZAeRydN6cAJZMtbum-lkbN5OVp0r-bvHY3Y8oWC/exec";
 
     async function chargerHistorique() {
       try {
@@ -92,25 +114,43 @@
         const data = await res.json();
         console.log("Données reçues :", data);
 
+        if (!Array.isArray(data)) {
+          throw new Error("Les données reçues ne sont pas un tableau");
+        }
+
         // Trier du plus récent au plus ancien
         data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
         const historique = document.getElementById("historique");
         historique.innerHTML = ""; // Clear list to prevent duplicates
 
-        data.forEach(item => {
+        if (data.length === 0) {
           const li = document.createElement("li");
-          li.textContent = `• Date: ${item.timestamp}${item.note ? ' | Note: ' + item.note : ' | Note: (aucune)'}`;
+          li.textContent = "Aucune entrée disponible";
           historique.appendChild(li);
-        });
+        } else {
+          data.forEach(item => {
+            const li = document.createElement("li");
+            const textSpan = document.createElement("span");
+            textSpan.textContent = `• Date: ${item.timestamp}${item.note ? ' | Note: ' + item.note : ' | Note: (aucune)'}`;
+            const deleteBtn = document.createElement("button");
+            deleteBtn.textContent = "Supprimer";
+            deleteBtn.className = "delete-btn";
+            deleteBtn.onclick = () => supprimerEntree(item.timestamp);
+            li.appendChild(textSpan);
+            li.appendChild(deleteBtn);
+            historique.appendChild(li);
+          });
+        }
 
         document.getElementById("compteur").textContent = data.length > 0 
           ? `Dernier appui : Date: ${data[0].timestamp}${data[0].note ? ' | Note: ' + data[0].note : ' | Note: (aucune)'}` 
           : "Dernier appui : jamais";
 
+        document.getElementById("errorMessage").textContent = "";
       } catch (e) {
         console.error("Erreur de chargement :", e);
-        document.getElementById("compteur").textContent = `Erreur de chargement : ${e.message}`;
+        document.getElementById("errorMessage").textContent = `Erreur de chargement : ${e.message}`;
       }
     }
 
@@ -130,7 +170,21 @@
         await chargerHistorique();
       } catch (e) {
         console.error("Erreur d'envoi :", e);
-        document.getElementById("compteur").textContent = `Erreur d'envoi : ${e.message}`;
+        document.getElementById("errorMessage").textContent = `Erreur d'envoi : ${e.message}`;
+      }
+    }
+
+    async function supprimerEntree(timestamp) {
+      try {
+        const url = `${API_URL}?delete=true&timestamp=${encodeURIComponent(timestamp)}`;
+        console.log("Envoi de la requête de suppression :", url);
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`Erreur HTTP : ${res.status}`);
+        console.log("Entrée supprimée, rechargement de l'historique...");
+        await chargerHistorique();
+      } catch (e) {
+        console.error("Erreur de suppression :", e);
+        document.getElementById("errorMessage").textContent = `Erreur de suppression : ${e.message}`;
       }
     }
 
